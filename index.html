@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 
@@ -116,4 +117,124 @@
 <script src="script.js"></script>
 
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Superstore Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Chart JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <h2>SUPERSTORE</h2>
+
+    <ul>
+      <li class="active">Dashboard</li>
+      <li>Sales</li>
+      <li>Profit</li>
+      <li>Customer</li>
+      <li>Shipping</li>
+      <li>Region</li>
+      <li>Product</li>
+    </ul>
+
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>Laporan Kinerja Penjualan Superstore 2024</h1>
+      <p>Periode Januari - Desember 2024</p>
+    </div>
+
+    <!-- ALERT -->
+    <div class="alert-box">
+      📌 Dashboard ini menampilkan performa penjualan Superstore berdasarkan data transaksi.
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-container">
+
+      <div class="kpi-card">
+        <h3>Total Revenue</h3>
+        <h2 id="totalSales">$0</h2>
+      </div>
+
+      <div class="kpi-card">
+        <h3>Total Orders</h3>
+        <h2 id="totalOrders">0</h2>
+      </div>
+
+      <div class="kpi-card">
+        <h3>Total Profit</h3>
+        <h2 id="totalProfit">$0</h2>
+      </div>
+
+      <div class="kpi-card">
+        <h3>Total Customers</h3>
+        <h2 id="totalCustomers">0</h2>
+      </div>
+
+    </div>
+
+<!-- REVENUE SECTION -->
+<div class="revenue-section">
+
+  <div class="revenue-header">
+<h2 id="revenueTitle">Revenue by Month</h2>  </div>
+
+  <div id="revenueBars"></div>
+  <!-- TABLE -->
+<div class="quarter-table">
+</div>
+
+</div>
+
+    <!-- NARRATIVE -->
+    <div class="narrative">
+
+      <h3>Dashboard Summary</h3>
+
+      <p>
+        Dashboard ini menampilkan performa penjualan Superstore selama tahun 2024.
+        KPI utama menunjukkan total revenue, jumlah order, total profit,
+        dan total customer berdasarkan data transaksi.
+      </p>
+
+      <p>
+        Grafik revenue bulanan memperlihatkan tren penjualan yang mengalami
+        perubahan di beberapa periode tertentu.
+      </p>
+
+    </div>
+
+  </main>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+>>>>>>> 4b75d9ac5f6e7f2dde9e26590e97e21d435921e2
 </html>
