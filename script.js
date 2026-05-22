@@ -2,161 +2,193 @@ fetch("data/superstore.xlsx")
   .then((response) => response.arrayBuffer())
 
   .then((data) => {
-    // FIX EXCEL DATE
     const workbook = XLSX.read(data, {
       cellDates: true,
     });
 
-    // AMBIL SHEET ORDERS
     const sheet = workbook.Sheets["Orders"];
 
-    // CONVERT JSON
     const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-    console.log(jsonData[0]);
-
     // KPI
+
     let totalSales = 0;
     let totalProfit = 0;
+    let totalDiscount = 0;
 
     let orders = new Set();
-    let customers = new Set();
 
-    // CARI TAHUN TERBARU
-    let latestYear = 0;
+    // SALES PROFIT
 
-    jsonData.forEach((row) => {
-      const date = row["Order Date"];
+    const yearlySales = {};
+    const yearlyProfit = {};
 
-      if (date instanceof Date) {
-        const year = date.getFullYear();
+    // CATEGORY
 
-        if (year > latestYear) {
-          latestYear = year;
-        }
-      }
-    });
+    const categoryProfit = {};
 
-    // REVENUE BULANAN
-    const monthlyRevenue = {
-      Jan: 0,
-      Feb: 0,
-      Mar: 0,
-      Apr: 0,
-      May: 0,
-      Jun: 0,
-      Jul: 0,
-      Aug: 0,
-      Sep: 0,
-      Oct: 0,
-      Nov: 0,
-      Dec: 0,
+    // DISCOUNT
+
+    const discountImpact = {
+      Low: 0,
+      Medium: 0,
+      High: 0,
     };
+
+    // LOOP
 
     jsonData.forEach((row) => {
       const sales = Number(row["Sales"]) || 0;
+
       const profit = Number(row["Profit"]) || 0;
+
+      const discount = Number(row["Discount"]) || 0;
 
       totalSales += sales;
       totalProfit += profit;
+      totalDiscount += discount;
 
       // ORDER
+
       if (row["Order ID"]) {
         orders.add(row["Order ID"]);
       }
 
-      // CUSTOMER
-      if (row["Customer ID"]) {
-        customers.add(row["Customer ID"]);
-      }
-
       // DATE
+
       const date = row["Order Date"];
 
       if (date instanceof Date) {
         const year = date.getFullYear();
 
-        // FILTER TAHUN TERBARU
-        if (year === latestYear) {
-          const month = date.toLocaleString("default", {
-            month: "short",
-          });
-
-          if (monthlyRevenue[month] !== undefined) {
-            monthlyRevenue[month] += sales;
-          }
+        if (!yearlySales[year]) {
+          yearlySales[year] = 0;
         }
+
+        if (!yearlyProfit[year]) {
+          yearlyProfit[year] = 0;
+        }
+
+        yearlySales[year] += sales;
+        yearlyProfit[year] += profit;
+      }
+
+      // CATEGORY
+
+      const category = row["Category"];
+
+      if (!categoryProfit[category]) {
+        categoryProfit[category] = 0;
+      }
+
+      categoryProfit[category] += profit;
+
+      // DISCOUNT
+
+      if (discount <= 0.1) {
+        discountImpact["Low"] += profit;
+      } else if (discount <= 0.3) {
+        discountImpact["Medium"] += profit;
+      } else {
+        discountImpact["High"] += profit;
       }
     });
 
     // KPI DISPLAY
 
     document.getElementById("totalSales").innerHTML =
-      "$" + Math.round(totalSales).toLocaleString();
-
-    document.getElementById("totalOrders").innerHTML = orders.size;
+      "$" + (totalSales / 1000000).toFixed(2) + "M";
 
     document.getElementById("totalProfit").innerHTML =
-      "$" + Math.round(totalProfit).toLocaleString();
+      "$" + Math.round(totalProfit / 1000) + "K";
 
-    document.getElementById("totalCustomers").innerHTML = customers.size;
+    document.getElementById("totalOrders").innerHTML =
+      orders.size.toLocaleString();
 
-    // TITLE DINAMIS
+    document.getElementById("avgDiscount").innerHTML =
+      ((totalDiscount / jsonData.length) * 100).toFixed(1) + "%";
 
-    document.getElementById("revenueTitle").innerHTML =
-      `Revenue by Month -- ${latestYear}`;
+    // CHART 1
 
-    // REVENUE BARS
+    const salesProfitChart = document.getElementById("salesProfitChart");
 
-    const revenueBars = document.getElementById("revenueBars");
+    new Chart(salesProfitChart, {
+      type: "line",
 
-    const maxRevenue = Math.max(...Object.values(monthlyRevenue));
+      data: {
+        labels: Object.keys(yearlySales),
 
-    const monthNames = {
-      Jan: `Januari ${latestYear}`,
-      Feb: `Februari ${latestYear}`,
-      Mar: `Maret ${latestYear}`,
-      Apr: `April ${latestYear}`,
-      May: `Mei ${latestYear}`,
-      Jun: `Juni ${latestYear}`,
-      Jul: `Juli ${latestYear}`,
-      Aug: `Agustus ${latestYear}`,
-      Sep: `September ${latestYear}`,
-      Oct: `Oktober ${latestYear}`,
-      Nov: `November ${latestYear}`,
-      Dec: `Desember ${latestYear}`,
-    };
+        datasets: [
+          {
+            label: "Sales",
+            data: Object.values(yearlySales),
+            borderColor: "#2563eb",
+            backgroundColor: "#2563eb",
+            tension: 0.4,
+          },
 
-    Object.keys(monthlyRevenue).forEach((month) => {
-      const revenue = monthlyRevenue[month];
+          {
+            label: "Profit",
+            data: Object.values(yearlyProfit),
+            borderColor: "#16a34a",
+            backgroundColor: "#16a34a",
+            tension: 0.4,
+          },
+        ],
+      },
 
-      const percentage = maxRevenue > 0 ? (revenue / maxRevenue) * 100 : 0;
+      options: {
+        responsive: true,
+      },
+    });
 
-      revenueBars.innerHTML += `
+    // CHART 2
 
-        <div class="revenue-item">
+    const categoryChart = document.getElementById("categoryChart");
 
-            <div class="month-label">
-                ${monthNames[month]}
-            </div>
+    new Chart(categoryChart, {
+      type: "bar",
 
-            <div class="bar-container">
+      data: {
+        labels: Object.keys(categoryProfit),
 
-                <div class="bar"
-                    style="width:${percentage}%">
+        datasets: [
+          {
+            label: "Profit",
 
-                    $${Math.round(revenue).toLocaleString()}
+            data: Object.values(categoryProfit),
 
-                </div>
+            backgroundColor: ["#ef4444", "#64748b", "#16a34a"],
+          },
+        ],
+      },
 
-            </div>
+      options: {
+        responsive: true,
+      },
+    });
 
-            <div class="amount">
-                $${Math.round(revenue / 1000)}K
-            </div>
+    // CHART 3
 
-        </div>
+    const discountChart = document.getElementById("discountChart");
 
-        `;
+    new Chart(discountChart, {
+      type: "doughnut",
+
+      data: {
+        labels: Object.keys(discountImpact),
+
+        datasets: [
+          {
+            data: Object.values(discountImpact),
+
+            backgroundColor: ["#16a34a", "#facc15", "#ef4444"],
+          },
+        ],
+      },
+
+      options: {
+        responsive: true,
+      },
     });
   });

@@ -6,9 +6,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Superstore Dashboard</title>
+  <title>Superstore Storytelling Dashboard</title>
 
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- CHART JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- XLSX -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -19,99 +23,192 @@
 
 <div class="container">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <!-- HERO -->
+  <section class="hero">
 
-    <h2>SUPERSTORE</h2>
+    <p class="hero-tag">
+      SUPERSTORE ANALYTICS REPORT
+    </p>
 
-    <ul>
-      <li class="active">Dashboard</li>
-      <li>Sales</li>
-      <li>Profit</li>
-      <li>Customer</li>
-      <li>Shipping</li>
-      <li>Region</li>
-      <li>Product</li>
-    </ul>
+    <h1>
+      Diskon Tinggi Tidak Selalu Menghasilkan Profit
+    </h1>
 
-  </aside>
+    <p class="hero-desc">
 
-  <!-- MAIN CONTENT -->
-  <main class="main-content">
+      Analisis Superstore menunjukkan bahwa peningkatan discount
+      memang mendorong penjualan, namun berdampak pada penurunan profit
+      di beberapa kategori utama.
 
-    <!-- HEADER -->
-    <div class="header">
-      <h1>Laporan Kinerja Penjualan Superstore</h1>
-      <p>Dashboard Analisis Penjualan dan Revenue</p>
-    </div>
+    </p>
 
-    <!-- ALERT -->
-    <div class="alert-box">
-      📌 Dashboard ini menampilkan performa penjualan Superstore berdasarkan data transaksi.
-    </div>
+  </section>
 
-    <!-- KPI -->
-    <div class="kpi-container">
+  <!-- KPI -->
+  <section class="kpi-section">
 
-      <div class="kpi-card">
-        <h3>Total Revenue</h3>
-        <h2 id="totalSales">$0</h2>
-      </div>
+    <div class="kpi-card">
 
-      <div class="kpi-card">
-        <h3>Total Orders</h3>
-        <h2 id="totalOrders">0</h2>
-      </div>
+      <p>Total Revenue</p>
 
-      <div class="kpi-card">
-        <h3>Total Profit</h3>
-        <h2 id="totalProfit">$0</h2>
-      </div>
-
-      <div class="kpi-card">
-        <h3>Total Customers</h3>
-        <h2 id="totalCustomers">0</h2>
-      </div>
+      <h2 id="totalSales">
+        $0
+      </h2>
 
     </div>
 
-    <!-- REVENUE SECTION -->
-    <div class="revenue-section">
+    <div class="kpi-card">
 
-      <div class="revenue-header">
+      <p>Total Profit</p>
 
-        <h2 id="revenueTitle">
-          Revenue by Month
-        </h2>
-
-        <p>
-          Dalam USD · Data Internal Superstore
-        </p>
-
-      </div>
-
-      <div id="revenueBars"></div>
+      <h2 id="totalProfit">
+        $0
+      </h2>
 
     </div>
 
-    <!-- NARRATIVE -->
-    <div class="narrative">
+    <div class="kpi-card">
 
-      <h3>Dashboard Summary</h3>
+      <p>Total Orders</p>
 
-      <p>
-        Dashboard ini menampilkan performa penjualan Superstore berdasarkan total revenue,
-        jumlah order, total profit, dan customer aktif.
+      <h2 id="totalOrders">
+        0
+      </h2>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <p>Average Discount</p>
+
+      <h2 id="avgDiscount">
+        0%
+      </h2>
+
+    </div>
+
+  </section>
+
+  <!-- SECTION 1 -->
+  <section class="story-section">
+
+    <div class="story-text">
+
+      <p class="section-label">
+        SALES & PROFIT TREND
       </p>
 
-      <p>
-        Revenue by Month menunjukkan perubahan pendapatan setiap bulan
-        pada tahun terbaru di dataset.
+      <h2>
+        Revenue Bertumbuh Lebih Cepat Dibanding Profit
+      </h2>
+
+      <p class="section-desc">
+
+        Data menunjukkan bahwa penjualan meningkat
+        secara konsisten setiap tahun. Namun profit
+        tidak mengalami pertumbuhan yang sebanding.
+
       </p>
+
+      <div class="insight-box">
+
+        <strong>Insight:</strong><br><br>
+
+        Kenaikan sales tidak selalu meningkatkan profit.
+        Discount tinggi menyebabkan margin keuntungan
+        menjadi lebih rendah.
+
+      </div>
 
     </div>
 
-  </main>
+    <div class="story-chart">
+
+      <canvas id="salesProfitChart"></canvas>
+
+    </div>
+
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="story-section reverse">
+
+    <div class="story-chart">
+
+      <canvas id="categoryChart"></canvas>
+
+    </div>
+
+    <div class="story-text">
+
+      <p class="section-label">
+        CATEGORY PERFORMANCE
+      </p>
+
+      <h2>
+        Technology Menjadi Kategori Paling Menguntungkan
+      </h2>
+
+      <p class="section-desc">
+
+        Technology memberikan kontribusi profit terbesar
+        dibanding Furniture dan Office Supplies.
+
+      </p>
+
+      <div class="insight-box">
+
+        <strong>Insight:</strong><br><br>
+
+        Furniture memiliki revenue tinggi,
+        namun profit relatif lebih rendah
+        akibat biaya dan discount yang besar.
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- SECTION 3 -->
+  <section class="story-section">
+
+    <div class="story-text">
+
+      <p class="section-label">
+        DISCOUNT ANALYSIS
+      </p>
+
+      <h2>
+        Discount Tinggi Menekan Profit Perusahaan
+      </h2>
+
+      <p class="section-desc">
+
+        Profit mengalami penurunan signifikan
+        pada transaksi dengan tingkat discount tinggi.
+
+      </p>
+
+      <div class="insight-box">
+
+        <strong>Recommendation:</strong><br><br>
+
+        Superstore dapat meningkatkan profit dengan
+        mengurangi strategi discount agresif dan
+        memperkuat penjualan produk Technology.
+
+      </div>
+
+    </div>
+
+    <div class="story-chart">
+
+      <canvas id="discountChart"></canvas>
+
+    </div>
+
+  </section>
 
 </div>
 
