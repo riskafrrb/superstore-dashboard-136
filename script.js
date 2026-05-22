@@ -10,185 +10,268 @@ fetch("data/superstore.xlsx")
 
     const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-    // KPI
-
     let totalSales = 0;
     let totalProfit = 0;
-    let totalDiscount = 0;
 
-    let orders = new Set();
+    let customers = new Set();
 
-    // SALES PROFIT
-
-    const yearlySales = {};
-    const yearlyProfit = {};
-
-    // CATEGORY
-
-    const categoryProfit = {};
-
-    // DISCOUNT
-
-    const discountImpact = {
-      Low: 0,
-      Medium: 0,
-      High: 0,
-    };
-
-    // LOOP
+    const regionSales = {};
+    const regionProfit = {};
+    const regionCustomers = {};
+    const regionMargin = {};
+    const yearlyRegionSales = {};
 
     jsonData.forEach((row) => {
+      const region = row["Region"];
+
       const sales = Number(row["Sales"]) || 0;
 
       const profit = Number(row["Profit"]) || 0;
 
-      const discount = Number(row["Discount"]) || 0;
-
       totalSales += sales;
+
       totalProfit += profit;
-      totalDiscount += discount;
 
-      // ORDER
+      customers.add(row["Customer ID"]);
 
-      if (row["Order ID"]) {
-        orders.add(row["Order ID"]);
+      if (!regionSales[region]) {
+        regionSales[region] = 0;
       }
 
-      // DATE
+      regionSales[region] += sales;
+
+      if (!regionProfit[region]) {
+        regionProfit[region] = 0;
+      }
+
+      regionProfit[region] += profit;
+
+      if (!regionCustomers[region]) {
+        regionCustomers[region] = new Set();
+      }
+
+      regionCustomers[region].add(row["Customer ID"]);
 
       const date = row["Order Date"];
 
       if (date instanceof Date) {
         const year = date.getFullYear();
 
-        if (!yearlySales[year]) {
-          yearlySales[year] = 0;
+        if (!yearlyRegionSales[year]) {
+          yearlyRegionSales[year] = {};
         }
 
-        if (!yearlyProfit[year]) {
-          yearlyProfit[year] = 0;
+        if (!yearlyRegionSales[year][region]) {
+          yearlyRegionSales[year][region] = 0;
         }
 
-        yearlySales[year] += sales;
-        yearlyProfit[year] += profit;
-      }
-
-      // CATEGORY
-
-      const category = row["Category"];
-
-      if (!categoryProfit[category]) {
-        categoryProfit[category] = 0;
-      }
-
-      categoryProfit[category] += profit;
-
-      // DISCOUNT
-
-      if (discount <= 0.1) {
-        discountImpact["Low"] += profit;
-      } else if (discount <= 0.3) {
-        discountImpact["Medium"] += profit;
-      } else {
-        discountImpact["High"] += profit;
+        yearlyRegionSales[year][region] += sales;
       }
     });
 
-    // KPI DISPLAY
+    Object.keys(regionSales).forEach((region) => {
+      regionMargin[region] = (regionProfit[region] / regionSales[region]) * 100;
+    });
 
     document.getElementById("totalSales").innerHTML =
       "$" + (totalSales / 1000000).toFixed(2) + "M";
 
     document.getElementById("totalProfit").innerHTML =
-      "$" + Math.round(totalProfit / 1000) + "K";
+      "$" + (totalProfit / 1000).toFixed(0) + "K";
 
-    document.getElementById("totalOrders").innerHTML =
-      orders.size.toLocaleString();
+    document.getElementById("totalCustomers").innerHTML = customers.size;
 
-    document.getElementById("avgDiscount").innerHTML =
-      ((totalDiscount / jsonData.length) * 100).toFixed(1) + "%";
+    document.getElementById("avgMargin").innerHTML =
+      ((totalProfit / totalSales) * 100).toFixed(1) + "%";
 
-    // CHART 1
-
-    const salesProfitChart = document.getElementById("salesProfitChart");
-
-    new Chart(salesProfitChart, {
-      type: "line",
-
-      data: {
-        labels: Object.keys(yearlySales),
-
-        datasets: [
-          {
-            label: "Sales",
-            data: Object.values(yearlySales),
-            borderColor: "#2563eb",
-            backgroundColor: "#2563eb",
-            tension: 0.4,
-          },
-
-          {
-            label: "Profit",
-            data: Object.values(yearlyProfit),
-            borderColor: "#16a34a",
-            backgroundColor: "#16a34a",
-            tension: 0.4,
-          },
-        ],
+    const tooltipConfig = {
+      callbacks: {
+        label: function (context) {
+          return "$" + context.raw.toLocaleString();
+        },
       },
+    };
 
-      options: {
-        responsive: true,
-      },
-    });
-
-    // CHART 2
-
-    const categoryChart = document.getElementById("categoryChart");
-
-    new Chart(categoryChart, {
+    new Chart(document.getElementById("revenueRegionChart"), {
       type: "bar",
 
       data: {
-        labels: Object.keys(categoryProfit),
+        labels: Object.keys(regionSales),
+
+        datasets: [
+          {
+            label: "Revenue",
+
+            data: Object.values(regionSales),
+
+            backgroundColor: Object.keys(regionSales).map((region) =>
+              region === "West" ? "#7c3aed" : "#d6d3d1",
+            ),
+            borderRadius: 10,
+          },
+        ],
+      },
+
+      options: {
+        responsive: true,
+
+        plugins: {
+          legend: {
+            display: false,
+          },
+
+          tooltip: tooltipConfig,
+        },
+      },
+    });
+
+    new Chart(document.getElementById("profitRegionChart"), {
+      type: "bar",
+
+      data: {
+        labels: Object.keys(regionProfit),
 
         datasets: [
           {
             label: "Profit",
 
-            data: Object.values(categoryProfit),
+            data: Object.values(regionProfit),
 
-            backgroundColor: ["#ef4444", "#64748b", "#16a34a"],
+            backgroundColor: Object.keys(regionProfit).map((region) =>
+              region === "West" ? "#059669" : "#d6d3d1",
+            ),
+            borderRadius: 10,
           },
         ],
       },
 
       options: {
         responsive: true,
+
+        plugins: {
+          legend: {
+            display: false,
+          },
+
+          tooltip: tooltipConfig,
+        },
       },
     });
 
-    // CHART 3
-
-    const discountChart = document.getElementById("discountChart");
-
-    new Chart(discountChart, {
-      type: "doughnut",
+    new Chart(document.getElementById("marginChart"), {
+      type: "bar",
 
       data: {
-        labels: Object.keys(discountImpact),
+        labels: Object.keys(regionMargin),
 
         datasets: [
           {
-            data: Object.values(discountImpact),
+            label: "Margin %",
 
-            backgroundColor: ["#16a34a", "#facc15", "#ef4444"],
+            data: Object.values(regionMargin),
+
+            backgroundColor: Object.keys(regionMargin).map((region) =>
+              region === "Central"
+                ? "#e11d48"
+                : region === "West"
+                  ? "#7c3aed"
+                  : "#d6d3d1",
+            ),
+            borderRadius: 10,
           },
         ],
       },
 
       options: {
         responsive: true,
+
+        plugins: {
+          legend: {
+            display: false,
+          },
+
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return context.raw.toFixed(1) + "%";
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const customerLabels = Object.keys(regionCustomers);
+
+    const customerValues = customerLabels.map(
+      (region) => regionCustomers[region].size,
+    );
+
+    new Chart(document.getElementById("customerChart"), {
+      type: "bar",
+
+      data: {
+        labels: customerLabels,
+
+        datasets: [
+          {
+            label: "Customers",
+
+            data: customerValues,
+
+            backgroundColor: "#7c3aed",
+
+            borderRadius: 10,
+          },
+        ],
+      },
+
+      options: {
+        indexAxis: "y",
+
+        responsive: true,
+
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+      },
+    });
+
+    const years = Object.keys(yearlyRegionSales);
+
+    const westSales = years.map((year) => yearlyRegionSales[year]["West"] || 0);
+
+    new Chart(document.getElementById("growthChart"), {
+      type: "line",
+
+      data: {
+        labels: years,
+
+        datasets: [
+          {
+            label: "West Revenue Growth",
+
+            data: westSales,
+
+            borderColor: "#7c3aed",
+
+            backgroundColor: "#7c3aed",
+
+            tension: 0.4,
+
+            borderWidth: 3,
+          },
+        ],
+      },
+
+      options: {
+        responsive: true,
+
+        plugins: {
+          tooltip: tooltipConfig,
+        },
       },
     });
   });
