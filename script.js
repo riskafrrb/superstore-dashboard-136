@@ -2,21 +2,27 @@ fetch("data/superstore.xlsx")
   .then((response) => response.arrayBuffer())
 
   .then((data) => {
+    // FIX EXCEL DATE
     const workbook = XLSX.read(data, {
       cellDates: true,
     });
 
+    // AMBIL SHEET ORDERS
     const sheet = workbook.Sheets["Orders"];
 
+    // CONVERT JSON
     const jsonData = XLSX.utils.sheet_to_json(sheet);
 
     console.log(jsonData[0]);
 
+    // KPI
     let totalSales = 0;
     let totalProfit = 0;
 
     let orders = new Set();
     let customers = new Set();
+
+    // CARI TAHUN TERBARU
     let latestYear = 0;
 
     jsonData.forEach((row) => {
@@ -30,6 +36,8 @@ fetch("data/superstore.xlsx")
         }
       }
     });
+
+    // REVENUE BULANAN
     const monthlyRevenue = {
       Jan: 0,
       Feb: 0,
@@ -68,7 +76,8 @@ fetch("data/superstore.xlsx")
       if (date instanceof Date) {
         const year = date.getFullYear();
 
-        if (year === 2024) {
+        // FILTER TAHUN TERBARU
+        if (year === latestYear) {
           const month = date.toLocaleString("default", {
             month: "short",
           });
@@ -80,6 +89,8 @@ fetch("data/superstore.xlsx")
       }
     });
 
+    // KPI DISPLAY
+
     document.getElementById("totalSales").innerHTML =
       "$" + Math.round(totalSales).toLocaleString();
 
@@ -90,29 +101,36 @@ fetch("data/superstore.xlsx")
 
     document.getElementById("totalCustomers").innerHTML = customers.size;
 
+    // TITLE DINAMIS
+
+    document.getElementById("revenueTitle").innerHTML =
+      `Revenue by Month -- ${latestYear}`;
+
+    // REVENUE BARS
+
     const revenueBars = document.getElementById("revenueBars");
 
     const maxRevenue = Math.max(...Object.values(monthlyRevenue));
 
     const monthNames = {
-      Jan: "Januari 2024",
-      Feb: "Februari 2024",
-      Mar: "Maret 2024",
-      Apr: "April 2024",
-      May: "Mei 2024",
-      Jun: "Juni 2024",
-      Jul: "Juli 2024",
-      Aug: "Agustus 2024",
-      Sep: "September 2024",
-      Oct: "Oktober 2024",
-      Nov: "November 2024",
-      Dec: "Desember 2024",
+      Jan: `Januari ${latestYear}`,
+      Feb: `Februari ${latestYear}`,
+      Mar: `Maret ${latestYear}`,
+      Apr: `April ${latestYear}`,
+      May: `Mei ${latestYear}`,
+      Jun: `Juni ${latestYear}`,
+      Jul: `Juli ${latestYear}`,
+      Aug: `Agustus ${latestYear}`,
+      Sep: `September ${latestYear}`,
+      Oct: `Oktober ${latestYear}`,
+      Nov: `November ${latestYear}`,
+      Dec: `Desember ${latestYear}`,
     };
 
     Object.keys(monthlyRevenue).forEach((month) => {
       const revenue = monthlyRevenue[month];
 
-      const percentage = (revenue / maxRevenue) * 100;
+      const percentage = maxRevenue > 0 ? (revenue / maxRevenue) * 100 : 0;
 
       revenueBars.innerHTML += `
 
